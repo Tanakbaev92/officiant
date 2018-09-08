@@ -17,6 +17,8 @@ const float SOUND_SPEED = 29.1;
 const int SPEED_RIGHT = 249;
 const int SPEED_LEFT = 255;
 
+long START_TIME;
+
 void setup() {
 
   pinMode (MotorLeftForward, OUTPUT);
@@ -32,7 +34,8 @@ void setup() {
   pinMode(echoPinL, INPUT);
   pinMode(trigPinR, OUTPUT);
   pinMode(echoPinR, INPUT);
-
+  Serial.print("setup millis()");
+  Serial.println(millis());
 }
 
 void setSpeedToMotors() {
@@ -40,7 +43,15 @@ void setSpeedToMotors() {
   analogWrite(SpeedLeftPort, SPEED_LEFT);
 }
 
-void defineDirections(bool isLeft, bool isRight) {
+void defineDirections(bool isLeft, bool isRight, bool isStop) {
+  if (isStop) {
+    digitalWrite (MotorLeftForward, LOW);
+    digitalWrite (MotorLeftBackward, LOW);
+    digitalWrite (MotorRightForward, LOW);
+    digitalWrite (MotorRightBackward, LOW);
+
+    return;
+  }
   if (isLeft) {
     digitalWrite (MotorLeftForward, HIGH);
     digitalWrite (MotorLeftBackward, LOW);
@@ -59,35 +70,110 @@ void defineDirections(bool isLeft, bool isRight) {
 }
 
 void turn_left() {
-  defineDirections(false, true);
+  defineDirections(false, true, false);
   setSpeedToMotors();
 }
 
 void turn_right() {
-  defineDirections(true, false);
+  defineDirections(true, false, false);
   setSpeedToMotors();
 }
 
 void move_forward() {
-  defineDirections(true, true);
+  defineDirections(true, true, false);
   setSpeedToMotors();
 }
 
 void move_backward() {
-  defineDirections(false, false);
+  defineDirections(false, false, false);
   setSpeedToMotors();
 }
 
+void stop_moving() {
+  defineDirections(false, false, true);
+  setSpeedToMotors();
+}
+
+int getDistance() {
+  return 0;
+}
+
+void mapActions(int action) {
+  switch (action) {
+    case 1: 
+      turn_left();
+      break;
+    case 2:
+      turn_right();
+      break;
+    case 3:
+      move_forward();
+      break;
+    case 4:
+      move_backward();
+      break;
+    case 0:
+      stop_moving();
+      break;
+  }
+}
+
+const int TIME_INTERVALS_COUNT = 4;
+int timeIntervals[TIME_INTERVALS_COUNT] = { 1000, 1000, 3000, 2000 }; // три отрезка, первый в секунду, вторая в пол секунды, третья в 3 сек
+int actionsIntervals[TIME_INTERVALS_COUNT] = { 1, 2, 3, 4 };
+
+
+// узнать, в каком отрезке мы сейчас находимся, в любой момент времени
+
+// какой номер действия вернуть, если время прошло
+int getIndexFromTime(long time) { // 728, 10000 => 9 => 8 => 5 => 3
+  int i = 0;
+  while (time > 0 && i < TIME_INTERVALS_COUNT) {
+    
+    time = time - timeIntervals[i];
+    i ++;
+  }
+
+  if (time > 0) {
+    return -1;
+  }
+
+  return i - 1;
+}
+
+int getActionFromIndex(int index) {
+  if (index == -1) {
+    return 0;
+  }
+
+  if (index > TIME_INTERVALS_COUNT) {
+    return 0;
+  }
+
+  return actionsIntervals[index];
+}
 
 void loop() {
-  const int DELAY_TIME = 500;
-  turn_left();
-  delay(DELAY_TIME);
-  turn_right();
-  delay(DELAY_TIME);
-  move_forward();
-  delay(DELAY_TIME);
-  move_backward();
-  delay(DELAY_TIME);
 
+  long time = millis() - START_TIME;
+  int index = getIndexFromTime(time);
+  int action = getActionFromIndex(index);
+
+  mapActions(action);
+//  Serial.println(time);
+//
+//  Serial.print("index: ");
+//  Serial.println(index);
+//  
+//  Serial.print("action: ");
+//  Serial.println(action);
+
+
+
+
+  // если есть впереди препятствие - засечь время начала перпятствия. ничего не делать. флаг преграды. время начала флага. нет прегррады - 
+  // время конца преграды. добавить продложительность преграды к текущему отрезку времени действия
+
+//  mapActions(action);
+  
 }
