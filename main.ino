@@ -52,10 +52,10 @@ void mapActions(int action) {
 const int TIME_INTERVALS_COUNT = 4;
 Task * tasksQueue[TIME_INTERVALS_COUNT] = {
   // new Task(duration, actionNumber);
-  new Task(2000, 2),
-  new Task(2000, 1),
-  new Task(2000, 3),
-  new Task(1000, 4),
+  new Task(000, 2),
+  new Task(000, 1),
+  new Task(5000, 3),
+  new Task(5000, 4),
 };
 
 void setup() {
@@ -131,11 +131,6 @@ void stop_moving() {
   setSpeedToMotors();
 }
 
-int getDistance() {
-  return 0;
-}
-
-
 // узнать, в каком отрезке мы сейчас находимся, в любой момент времени
 
 // какой номер действия вернуть, если время прошло
@@ -164,22 +159,45 @@ int getActionFromIndex(long time) { // 728, 10000 => 9 => 8 => 5 => 3
   return tasksQueue[index]->action;
 }
 
+int getDistance() {
+  long duration;
+  
+  digitalWrite(trigPin, LOW);
+  
+  delayMicroseconds(2);
+  
+  digitalWrite(trigPin, HIGH);
+  
+  delayMicroseconds(10);
+  
+  digitalWrite(trigPin, LOW);
+  
+  duration = pulseIn(echoPin, HIGH);
 
+  Serial.println((duration/2) / SOUND_SPEED);
+  
+  return (duration/2) / SOUND_SPEED;
+}
 
-
-
-
+int BlockTime = 0;
+const int DELAY_TIME = 300;
+const int BLOCK_DISTANCE = 50;
 
 void loop() {
+  delay(DELAY_TIME);
 
-  long time = millis() - START_TIME;
+  if (getDistance() < BLOCK_DISTANCE) {
+    
+    BlockTime += DELAY_TIME;
+    mapActions(0);
+
+    return;
+  }
+
+  
+  long time = millis() - BlockTime;
   int action = getActionFromIndex(time);
 
   mapActions(action);
-
-
-  // если есть впереди препятствие - засечь время начала перпятствия. ничего не делать. флаг преграды. время начала флага. нет прегррады - 
-  // время конца преграды. добавить продложительность преграды к текущему отрезку времени действия
-  
 }
 
