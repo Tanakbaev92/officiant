@@ -1,3 +1,4 @@
+
 int MotorLeftForward = 4; // Input3 подключен к выводу 5
 int MotorLeftBackward = 5;
 int MotorRightForward = 7;
@@ -98,6 +99,53 @@ int getDistance() {
   return 0;
 }
 
+
+
+
+
+struct Task {
+  Task (int duration, int action) {
+    this->duration = duration;
+    this->action = action;
+  }
+  int duration;
+  int action;
+};
+
+
+Task *task = new Task(1000, 1);
+
+
+
+
+// узнать, в каком отрезке мы сейчас находимся, в любой момент времени
+
+// какой номер действия вернуть, если время прошло
+int getActionFromIndex(long time) { // 728, 10000 => 9 => 8 => 5 => 3
+  int i = 0;
+  while (time > 0 && i < TIME_INTERVALS_COUNT) {
+    
+    time = time - tasksQueue[i]->duration;
+    i ++;
+  }
+
+  if (time > 0) {
+    return 0;
+  }
+
+  int index = i - 1;
+
+  if (index < 0) {
+    return 0;
+  }
+
+  if (index > TIME_INTERVALS_COUNT) {
+    return 0;
+  }
+
+  return tasksQueue[index]->action;
+}
+
 void mapActions(int action) {
   switch (action) {
     case 1: 
@@ -119,61 +167,24 @@ void mapActions(int action) {
 }
 
 const int TIME_INTERVALS_COUNT = 4;
-int timeIntervals[TIME_INTERVALS_COUNT] = { 1000, 1000, 3000, 2000 }; // три отрезка, первый в секунду, вторая в пол секунды, третья в 3 сек
-int actionsIntervals[TIME_INTERVALS_COUNT] = { 1, 2, 3, 4 };
 
-
-// узнать, в каком отрезке мы сейчас находимся, в любой момент времени
-
-// какой номер действия вернуть, если время прошло
-int getIndexFromTime(long time) { // 728, 10000 => 9 => 8 => 5 => 3
-  int i = 0;
-  while (time > 0 && i < TIME_INTERVALS_COUNT) {
-    
-    time = time - timeIntervals[i];
-    i ++;
-  }
-
-  if (time > 0) {
-    return -1;
-  }
-
-  return i - 1;
-}
-
-int getActionFromIndex(int index) {
-  if (index == -1) {
-    return 0;
-  }
-
-  if (index > TIME_INTERVALS_COUNT) {
-    return 0;
-  }
-
-  return actionsIntervals[index];
-}
+Task * tasksQueue[TIME_INTERVALS_COUNT] = {
+  // new Task(duration, actionNumber);
+  new Task(2000, 2),
+  new Task(2000, 1),
+  new Task(2000, 3),
+  new Task(1000, 4),
+};
 
 void loop() {
 
   long time = millis() - START_TIME;
-  int index = getIndexFromTime(time);
-  int action = getActionFromIndex(index);
+  int action = getActionFromIndex(time);
 
   mapActions(action);
-//  Serial.println(time);
-//
-//  Serial.print("index: ");
-//  Serial.println(index);
-//  
-//  Serial.print("action: ");
-//  Serial.println(action);
-
-
 
 
   // если есть впереди препятствие - засечь время начала перпятствия. ничего не делать. флаг преграды. время начала флага. нет прегррады - 
   // время конца преграды. добавить продложительность преграды к текущему отрезку времени действия
-
-//  mapActions(action);
   
 }
