@@ -20,6 +20,44 @@ const int SPEED_LEFT = 255;
 
 long START_TIME;
 
+struct Task {
+  Task (int duration, int action) {
+    this->duration = duration;
+    this->action = action;
+  }
+  int duration;
+  int action;
+};
+
+void mapActions(int action) {
+  switch (action) {
+    case 1: 
+      turn_left();
+      break;
+    case 2:
+      turn_right();
+      break;
+    case 3:
+      move_forward();
+      break;
+    case 4:
+      move_backward();
+      break;
+    case 0:
+      stop_moving();
+      break;
+  }
+}
+
+const int TIME_INTERVALS_COUNT = 4;
+Task * tasksQueue[TIME_INTERVALS_COUNT] = {
+  // new Task(duration, actionNumber);
+  new Task(2000, 2),
+  new Task(2000, 1),
+  new Task(2000, 3),
+  new Task(1000, 4),
+};
+
 void setup() {
 
   pinMode (MotorLeftForward, OUTPUT);
@@ -35,8 +73,6 @@ void setup() {
   pinMode(echoPinL, INPUT);
   pinMode(trigPinR, OUTPUT);
   pinMode(echoPinR, INPUT);
-  Serial.print("setup millis()");
-  Serial.println(millis());
 }
 
 void setSpeedToMotors() {
@@ -100,24 +136,6 @@ int getDistance() {
 }
 
 
-
-
-
-struct Task {
-  Task (int duration, int action) {
-    this->duration = duration;
-    this->action = action;
-  }
-  int duration;
-  int action;
-};
-
-
-Task *task = new Task(1000, 1);
-
-
-
-
 // узнать, в каком отрезке мы сейчас находимся, в любой момент времени
 
 // какой номер действия вернуть, если время прошло
@@ -146,35 +164,11 @@ int getActionFromIndex(long time) { // 728, 10000 => 9 => 8 => 5 => 3
   return tasksQueue[index]->action;
 }
 
-void mapActions(int action) {
-  switch (action) {
-    case 1: 
-      turn_left();
-      break;
-    case 2:
-      turn_right();
-      break;
-    case 3:
-      move_forward();
-      break;
-    case 4:
-      move_backward();
-      break;
-    case 0:
-      stop_moving();
-      break;
-  }
-}
 
-const int TIME_INTERVALS_COUNT = 4;
 
-Task * tasksQueue[TIME_INTERVALS_COUNT] = {
-  // new Task(duration, actionNumber);
-  new Task(2000, 2),
-  new Task(2000, 1),
-  new Task(2000, 3),
-  new Task(1000, 4),
-};
+
+
+
 
 void loop() {
 
@@ -188,3 +182,4 @@ void loop() {
   // время конца преграды. добавить продложительность преграды к текущему отрезку времени действия
   
 }
+
